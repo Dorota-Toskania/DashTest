@@ -13,7 +13,7 @@ import dash_html_components as html
 app = dash.Dash(__name__)
 
 # Connect to database OR data source here
-
+#To ja
 import mysql.connector
 
 try:
@@ -45,33 +45,33 @@ df = pd.DataFrame(data, columns=['ticker', 'indicator', 'year', 'quarter', 'valu
 df.sample(20)
 
 df.info()
-print(round(df.describe(),2))
+print(round(df.describe(), 2))
 
 # Define graphs
 
 # Creating trace1
-trace1 = go.Scatter(x = df['year'],
-                    y = df[df['indicator']=='WSP']['value'],
-                    mode = "markers",
-                    name = "Indicator WSP",
-                    marker = dict(color = 'red'),
-                    text= df.year)
+trace1 = go.Scatter(x=df['year'],
+                    y=df[df['indicator'] == 'WSP']['value'],
+                    mode="markers",
+                    name="Indicator WSP",
+                    marker=dict(color='red'),
+                    text=df.year)
 
 # Creating trace2
-trace2 = go.Scatter(x = df['year'],
-                    y = df[df['indicator']=='ROA']['value'],
-                    mode = "lines",
-                    name = "Indicator ROA",
-                    marker = dict(color = 'blue'),
-                    text= df.year)
+trace2 = go.Scatter(x=df['year'],
+                    y=df[df['indicator'] == 'ROA']['value'],
+                    mode="lines",
+                    name="Indicator ROA",
+                    marker=dict(color='blue'),
+                    text=df.year)
 
 # Creating trace3
-trace3 = go.Scatter(x = df['year'],
-                    y = df[df['indicator']=='wog']['value'],
-                    mode = "lines+markers",
-                    name = "Indicator wog",
-                    marker = dict(color = 'green'),
-                    text= df.year)
+trace3 = go.Scatter(x=df['year'],
+                    y=df[df['indicator'] == 'wog']['value'],
+                    mode="lines+markers",
+                    name="Indicator wog",
+                    marker=dict(color='green'),
+                    text=df.year)
 
 dcc.Dropdown(
     options=[
@@ -83,10 +83,10 @@ dcc.Dropdown(
 )
 
 data = [trace1, trace2, trace3]
-layout = dict(title = 'Wykresy predykcji cen akcji',
-              xaxis= dict(title= 'Czas w latach',ticklen= 5,zeroline= False),
+layout = dict(title='Wykresy predykcji cen akcji',
+              xaxis=dict(title='Czas w latach', ticklen=5, zeroline=False),
               hovermode="x unified")
-fig = dict(data = data, layout = layout)
+fig = dict(data=data, layout=layout)
 
 # plotowanie w notebook (iplot(fig))
 
@@ -102,5 +102,3 @@ app.layout = html.Div()
 # Run the app
 # if __name__ == '__main__':
 #     app.run_server(debug=True)
-
-
