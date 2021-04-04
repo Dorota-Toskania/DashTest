@@ -72,7 +72,6 @@ app.layout = html.Div([
 app.title = 'Financial Dashboard'
 
 
-
 # -----------------------------------
 # Define callback
 # -----------------------------------
@@ -81,6 +80,8 @@ app.title = 'Financial Dashboard'
               [Input('ticker_selection', 'value')])
 def retrieve_plots(ticker):
     filtered_df = df[df['ticker'] == ticker]
+
+    # Creating trace1
     trace1 = go.Scatter(x=filtered_df['year'],
                         y=filtered_df[filtered_df['indicator'] == 'WSP']['value'],
                         mode="markers",
@@ -106,8 +107,8 @@ def retrieve_plots(ticker):
 
     data = [trace1, trace2, trace3]
 
-    layout = dict(title='Wykresy predykcji cen akcji',
-                  xaxis=dict(title='Czas w latach', ticklen=5, zeroline=False),
+    layout = dict(title='Stock price prediction charts',
+                  xaxis=dict(title='Company report dates', ticklen=5, zeroline=False),
                   hovermode="x unified")
     datapoints = {'data': data, 'layout': layout}
     return datapoints
@@ -116,7 +117,7 @@ def retrieve_plots(ticker):
 @app.callback(Output(component_id='text', component_property='children'),
               [Input(component_id='ticker_selection', component_property='value')])
 def update_output_div(ticker_value):
-    return 'Displaying data for company with ticker "{}"'.format(ticker_value)
+    return 'Select a company to display data "{}"'.format(ticker_value)
 
 
 # -----------------------------------
