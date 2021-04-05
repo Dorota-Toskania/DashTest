@@ -92,7 +92,7 @@ def retrieve_plots(ticker):
     # Creating trace2
     trace2 = go.Scatter(x=filtered_df['year'],
                         y=filtered_df[filtered_df['indicator'] == 'ROA']['value'],
-                        mode="lines",
+                        mode="markers",
                         name="Indicator ROA",
                         marker=dict(color='blue'),
                         text=filtered_df.year)
@@ -100,7 +100,7 @@ def retrieve_plots(ticker):
     # Creating trace3
     trace3 = go.Scatter(x=filtered_df['year'],
                         y=filtered_df[filtered_df['indicator'] == 'wog']['value'],
-                        mode="lines+markers",
+                        mode="markers",
                         name="Indicator wog",
                         marker=dict(color='green'),
                         text=filtered_df.year)
