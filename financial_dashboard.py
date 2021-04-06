@@ -35,8 +35,10 @@ except Error as e:
 
 curs = db.cursor()
 
-testy = """SELECT ticker, indicator, year, quarter, value
-FROM financial_calculated_data fcd """
+testy = """SELECT fc.ticker, c.stock_name, fc.indicator, fc.year, fc.quarter, fc.value 
+FROM financial_calculated_data AS fc
+INNER JOIN companies AS c
+ON c.ticker = fc.ticker """
 
 curs.execute(testy)
 
@@ -44,11 +46,11 @@ data = []
 for x in curs:
     data.append(x)
 
-df = pd.DataFrame(data, columns=['ticker', 'indicator', 'year', 'quarter', 'value'])
-df.sample(20)
+df = pd.DataFrame(data, columns=['ticker', 'stock_name', 'indicator', 'year', 'quarter', 'value'])
+# print(df.sample(20))
 
-df.info()
-print(round(df.describe(), 2))
+# df.info()
+# print(round(df.describe(), 2))
 
 # -----------------------------------
 # Initialize the app
@@ -77,7 +79,7 @@ app.layout = html.Div(children=[
         html.Div(style={
             'textAlign': 'center', 'color': colors['font']
             },
-            children='''Financial Project web application
+            children='''Financial Project Web Application
         '''),
 
         dcc.Dropdown(style={
@@ -111,24 +113,32 @@ def retrieve_plots(ticker):
 
     # Creating trace2
     trace2 = go.Scatter(x=filtered_df['year'],
-                        y=filtered_df[filtered_df['indicator'] == 'ROA']['value'],
-                        mode="lines",
-                        name="Indicator ROA",
+                        y=filtered_df[filtered_df['indicator'] == 'WBP']['value'],
+                        mode="lines+markers",
+                        name="Indicator WBP",
                         marker=dict(color='#C2BF4E'),
                         text=filtered_df.year)
 
     # Creating trace3
     trace3 = go.Scatter(x=filtered_df['year'],
-                        y=filtered_df[filtered_df['indicator'] == 'wog']['value'],
+                        y=filtered_df[filtered_df['indicator'] == 'tsk']['value'],
                         mode="markers+lines",
-                        name="Indicator wog",
+                        name="Indicator tsk",
                         marker=dict(color='#36017A'),
                         text=filtered_df.year)
 
-    data = [trace1, trace2, trace3]
+    # Creating trace4
+    trace4 = go.Scatter(x=filtered_df['year'],
+                        y=filtered_df[filtered_df['indicator'] == 'wsk']['value'],
+                        mode="lines",
+                        name="Indicator wsk",
+                        marker=dict(color='red'),
+                        text=filtered_df.year)
 
-    layout = dict(title='Stock price prediction charts',
-                  xaxis=dict(title='Company report dates', ticklen=5, zeroline=False),
+    data = [trace1, trace2, trace3, trace4]
+
+    layout = dict(yaxis=dict(title='Prices', ticklen=5, zeroline=False),
+                  xaxis=dict(title='Date', ticklen=5, zeroline=False),
                   hovermode="x unified",
                   style={'textAlign': 'center',
                          'color': colors['text']
