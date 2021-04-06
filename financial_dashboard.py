@@ -127,15 +127,8 @@ def retrieve_plots(ticker):
                         marker=dict(color='#36017A'),
                         text=filtered_df.year)
 
-    # Creating trace4
-    trace4 = go.Scatter(x=filtered_df['year'],
-                        y=filtered_df[filtered_df['indicator'] == 'wsk']['value'],
-                        mode="lines",
-                        name="Indicator wsk",
-                        marker=dict(color='red'),
-                        text=filtered_df.year)
 
-    data = [trace1, trace2, trace3, trace4]
+    data = [trace1, trace2, trace3]
 
     layout = dict(yaxis=dict(title='Prices', ticklen=5, zeroline=False),
                   xaxis=dict(title='Date', ticklen=5, zeroline=False),
