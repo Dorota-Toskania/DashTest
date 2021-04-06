@@ -61,27 +61,30 @@ external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
-colors = {
-    'background': '#111111',
-    'text': '#7FDBFF'
-}
+colors = dict(background='#8C8984', text='#005B9A', font='#3399FF')
 
 # -----------------------------------
 # Define app layout
 # -----------------------------------
 
-app.layout = html.Div([
-    html.H1('Financial Dashboard for FellowshipPL',
+app.layout = html.Div(
+            children=[
+    html.H1(children='Financial Dashboard for FellowshipPL',
             style={'textAlign': 'center', 'color': colors['text']}
             ),
 
-    html.Div([
+    html.Div(children=[
 
-        html.Div(
+        html.Div(style={
+            'textAlign': 'center',
+        },
             children='''A web application for Financial Project.
         '''),
 
-        dcc.Dropdown(
+        dcc.Dropdown(style={
+            'textAlign': 'left',
+            'color': colors['text']
+        },
             id='ticker_selection',
             options=[
                 {'label': i, 'value': i} for i in df.ticker.unique()
@@ -89,9 +92,6 @@ app.layout = html.Div([
         html.H3(id='text'),
         dcc.Graph(id='indicators')])
 ])
-
-
-# app.title = 'Financial Dashboard'
 
 # -----------------------------------
 # Define callback
@@ -113,9 +113,9 @@ def retrieve_plots(ticker):
     # Creating trace2
     trace2 = go.Scatter(x=filtered_df['year'],
                         y=filtered_df[filtered_df['indicator'] == 'ROA']['value'],
-                        mode="markers",
+                        mode="lines",
                         name="Indicator ROA",
-                        marker=dict(color='blue'),
+                        marker=dict(color='#FF3333'),
                         text=filtered_df.year)
 
     # Creating trace3
@@ -123,7 +123,7 @@ def retrieve_plots(ticker):
                         y=filtered_df[filtered_df['indicator'] == 'wog']['value'],
                         mode="markers",
                         name="Indicator wog",
-                        marker=dict(color='green'),
+                        marker=dict(color='#005B9A'),
                         text=filtered_df.year)
 
     data = [trace1, trace2, trace3]
@@ -136,7 +136,8 @@ def retrieve_plots(ticker):
 
 
 @app.callback(Output(component_id='text', component_property='children'),
-              [Input(component_id='ticker_selection', component_property='value')])
+              [Input(component_id='ticker_selection', component_property='value')]
+              )
 def update_output_div(ticker_value):
     return 'Select a company to display data "{}"'.format(ticker_value)
 
