@@ -1,23 +1,20 @@
+# -*- coding: utf-8 -*-
+
+# Run this app with `python app.py` and
+# visit http://127.0.0.1:8050/ in your web browser.
+
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
-import pandas as pd
 import plotly.graph_objs as go
 from dash.dependencies import Input, Output
 from mysql.connector import Error
 import mysql.connector
-
-# -----------------------------------
-# Initialize the app
-# -----------------------------------
-
-
-app = dash.Dash(__name__)
+import pandas as pd
 
 # -----------------------------------
 # Connect to database OR data source here
 # -----------------------------------
-
 
 try:
     db = mysql.connector.connect(
@@ -54,12 +51,36 @@ df.info()
 print(round(df.describe(), 2))
 
 # -----------------------------------
+# Initialize the app
+# This application is using a custom
+# CSS stylesheet to modify the default
+# styles of the elements.
+# -----------------------------------
+
+external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+
+app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
+
+colors = {
+    'background': '#111111',
+    'text': '#7FDBFF'
+}
+
+# -----------------------------------
 # Define app layout
 # -----------------------------------
 
 app.layout = html.Div([
-    html.H1('Financial Dashboard'),
+    html.H1('Financial Dashboard for FellowshipPL',
+            style={'textAlign': 'center', 'color': colors['text']}
+            ),
+
     html.Div([
+
+        html.Div(
+            children='''A web application for Financial Project.
+        '''),
+
         dcc.Dropdown(
             id='ticker_selection',
             options=[
@@ -69,8 +90,8 @@ app.layout = html.Div([
         dcc.Graph(id='indicators')])
 ])
 
-app.title = 'Financial Dashboard'
 
+# app.title = 'Financial Dashboard'
 
 # -----------------------------------
 # Define callback
@@ -84,9 +105,9 @@ def retrieve_plots(ticker):
     # Creating trace1
     trace1 = go.Scatter(x=filtered_df['year'],
                         y=filtered_df[filtered_df['indicator'] == 'WSP']['value'],
-                        mode="markers",
+                        mode="lines+markers",
                         name="Indicator WSP",
-                        marker=dict(color='red'),
+                        marker=dict(color='#7FDBFF'),
                         text=filtered_df.year)
 
     # Creating trace2
