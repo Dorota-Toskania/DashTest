@@ -35,7 +35,7 @@ except Error as e:
 
 curs = db.cursor()
 
-testy = """SELECT fc.ticker, c.stock_name, fc.indicator, fc.year, fc.quarter, fc.value 
+testy = """SELECT fc.ticker, c.issuer, fc.indicator, fc.year, fc.quarter, fc.value 
 FROM financial_calculated_data AS fc
 INNER JOIN companies AS c
 ON c.ticker = fc.ticker """
@@ -46,8 +46,8 @@ data = []
 for x in curs:
     data.append(x)
 
-df = pd.DataFrame(data, columns=['ticker', 'stock_name', 'indicator', 'year', 'quarter', 'value'])
-# print(df.sample(20))
+df = pd.DataFrame(data, columns=['ticker', 'issuer', 'indicator', 'year', 'quarter', 'value'])
+print(df.sample())
 
 # df.info()
 # print(round(df.describe(), 2))
@@ -82,32 +82,59 @@ app.layout = html.Div(children=[
             children='''Financial Project Web Application
         '''),
 
+# -----------------------------------
+# Define Dropdown
+# By #ticker or by name
+# -----------------------------------
+
+        # dcc.Dropdown(style={
+        #     'textAlign': 'left',
+        #     'color': colors['text']
+        #
+        # },
+        #     id='ticker_selection',
+        #     options=[
+        #         {'label': i, 'value': i} for i in df.ticker.unique()
+        #     ], multi=False,
+        #     placeholder='Filter by ticker of company ...'),
+        # html.H3(id='text'),
+        # dcc.Graph(id='indicators')])
+        #     ])
+
         dcc.Dropdown(style={
-            'textAlign': 'left',
-            'color': colors['text']
-        },
-            id='ticker_selection',
-            options=[
-                {'label': i, 'value': i} for i in df.ticker.unique()
-            ], multi=False, placeholder='Filter by ticker of company ...'),
-        html.H3(id='text'),
-        dcc.Graph(id='indicators')])
-            ])
+                    'textAlign': 'left',
+                    'color': colors['text']
+
+                },
+                    id='issuer_selection',
+                    options=[
+                        {'label': i, 'value': i} for i in df.issuer.unique()
+                    ], multi=False,
+                    placeholder='Filter by name of company ...'),
+                html.H3(id='text'),
+                dcc.Graph(id='indicators')])
+                    ])
 
 # -----------------------------------
 # Define callback
+# By #ticker or by name
 # -----------------------------------
 
+# @app.callback(Output('indicators', 'figure'),
+#               [Input('ticker_selection', 'value')])
+# def retrieve_plots(ticker):
+#     filtered_df = df[df['ticker'] == ticker]
+
 @app.callback(Output('indicators', 'figure'),
-              [Input('ticker_selection', 'value')])
-def retrieve_plots(ticker):
-    filtered_df = df[df['ticker'] == ticker]
+              [Input('issuer_selection', 'value')])
+def retrieve_plots(issuer):
+    filtered_df = df[df['issuer'] == issuer]
 
     # Creating trace1
     trace1 = go.Scatter(x=filtered_df['year'],
-                        y=filtered_df[filtered_df['indicator'] == 'WSP']['value'],
+                        y=filtered_df[filtered_df['indicator'] == 'ROA']['value'],
                         mode="lines+markers",
-                        name="Indicator WSP",
+                        name="Indicator ROA",
                         marker=dict(color='#B780FF'),
                         text=filtered_df.year)
 
@@ -139,14 +166,6 @@ def retrieve_plots(ticker):
                   )
     datapoints = {'data': data, 'layout': layout}
     return datapoints
-
-
-# @app.callback(
-#     Output(component_id='text', component_property='children'),
-#     [Input(component_id='ticker_selection', component_property='value')])
-# def update_output_div(ticker_value):
-#     return 'Select a company to display data "{}"'.format(ticker_value)
-
 
 # -----------------------------------
 # Run the app
