@@ -35,12 +35,15 @@ except Error as e:
 
 curs = db.cursor()
 
-testy = """SELECT fc.ticker, c.issuer, fc.indicator, fc.year, fc.quarter, fc.value 
+testy = """SELECT fc.ticker, c.issuer, fc.indicator, fc.year, fc.quarter, fc.value
 FROM financial_calculated_data AS fc
 INNER JOIN companies AS c
 ON c.ticker = fc.ticker """
 
-curs.execute(testy)
+testy1 = """SELECT o.ticker, o.issuer, o.session_date, o.open, o.open
+FROM olhc AS o"""
+
+curs.execute(testy, testy1)
 
 data = []
 for x in curs:
@@ -49,11 +52,19 @@ for x in curs:
 df = pd.DataFrame(data, columns=['ticker', 'issuer', 'indicator', 'year', 'quarter', 'value'])
 print(df.sample())
 
+data1 = []
+for x in curs:
+    data1.append(x)
+
+df1 = pd.DataFrame(data1, columns=['ticker', 'issuer', 'session_date', 'open', 'close'])
+#print(df1.sample())
+
 # df.info()
 # print(round(df.describe(), 2))
 
 # -----------------------------------
 # Initialize the app
+# -----------------------------------
 # This application is using a custom
 # CSS stylesheet to modify the default
 # styles of the elements.
@@ -84,7 +95,7 @@ app.layout = html.Div(children=[
 
 # -----------------------------------
 # Define Dropdown
-# By #ticker or by name
+# Sample by #ticker or by name
 # -----------------------------------
 
         # dcc.Dropdown(style={
@@ -112,11 +123,12 @@ app.layout = html.Div(children=[
                     ], multi=False,
                     placeholder='Filter by name of company ...'),
                 html.H3(id='text'),
-                dcc.Graph(id='indicators')])
+                dcc.Graph(id='indicators'),
+                dcc.Graph(id='indicators1')])
                     ])
 
 # -----------------------------------
-# Define callback
+# Define first callback
 # By #ticker or by name
 # -----------------------------------
 
@@ -165,6 +177,44 @@ def retrieve_plots(issuer):
                          },
                   )
     datapoints = {'data': data, 'layout': layout}
+    return datapoints
+
+# -----------------------------------
+# Define second callback
+# -----------------------------------
+
+@app.callback(Output('indicators1', 'figure'),
+              [Input('issuer_selection', 'value')])
+def retrieve_plots(issuer):
+    filtered_df1 = df1[df1['issuer'] == issuer]
+
+    # Creating trace1
+    trace1 = go.Bar(x=filtered_df1['session_date'],
+                        y=filtered_df1['close'],
+                        mode="lines+markers",
+                        name="Close price",
+                        marker=dict(color='#B780FF'),
+                        text=filtered_df1.session_date)
+
+    # Creating trace2
+    trace2 = go.Bar(x=filtered_df1['session_date'],
+                        y=filtered_df1['open'],
+                        mode="lines+markers",
+                        name="Open price",
+                        marker=dict(color='#C2BF4E'),
+                        text=filtered_df1.session_date)
+
+
+    data1 = [trace1, trace2]
+
+    layout = dict(yaxis=dict(title='Prices', ticklen=5, zeroline=False),
+                  xaxis=dict(title='Date', ticklen=5, zeroline=False),
+                  hovermode="x unified",
+                  style={'textAlign': 'center',
+                         'color': colors['text']
+                         },
+                  )
+    datapoints = {'data': data1, 'layout': layout}
     return datapoints
 
 # -----------------------------------
