@@ -73,14 +73,14 @@ colors = dict(background='#ffff',
 # -----------------------------------
 
 app.layout = html.Div(children=[
-    html.H1(children='Financial Dashboard for FellowshipPL',
+    html.H1(children='Financial Web Application',
             style={'textAlign': 'center', 'color': colors['text']}
             ),
     html.Div(children=[
         html.Div(style={
             'textAlign': 'center', 'color': colors['font']
             },
-            children='''Financial Project Web Application
+            children='''Financial Dashboard for FellowshipPL
         '''),
 
 # -----------------------------------

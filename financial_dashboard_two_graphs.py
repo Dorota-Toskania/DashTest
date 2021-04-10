@@ -6,6 +6,7 @@
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
+import dash_bootstrap_components as dbc
 import plotly.graph_objs as go
 from dash.dependencies import Input, Output
 from mysql.connector import Error
@@ -40,8 +41,8 @@ FROM financial_calculated_data AS fc
 INNER JOIN companies AS c
 ON c.ticker = fc.ticker """
 
-testy1 = """SELECT o.ticker, o.issuer, o.session_date, o.open, o.open
-FROM olhc AS o"""
+testy1 = """SELECT o.ticker, o.issuer, o.session_date, o.open, o.close
+FROM olhc AS o WHERE session_date > '2019-12-01 """
 
 curs.execute(testy, testy1)
 
@@ -50,17 +51,15 @@ for x in curs:
     data.append(x)
 
 df = pd.DataFrame(data, columns=['ticker', 'issuer', 'indicator', 'year', 'quarter', 'value'])
-print(df.sample())
+print(df)
 
 data1 = []
 for x in curs:
     data1.append(x)
 
 df1 = pd.DataFrame(data1, columns=['ticker', 'issuer', 'session_date', 'open', 'close'])
-#print(df1.sample())
+print(df1)
 
-# df.info()
-# print(round(df.describe(), 2))
 
 # -----------------------------------
 # Initialize the app
@@ -89,56 +88,49 @@ app.layout = html.Div(children=[
     html.Div(children=[
         html.Div(style={
             'textAlign': 'center', 'color': colors['font']
-            },
+        },
             children='''Financial Project Web Application
         '''),
 
-# -----------------------------------
-# Define Dropdown
-# Sample by #ticker or by name
-# -----------------------------------
-
-        # dcc.Dropdown(style={
-        #     'textAlign': 'left',
-        #     'color': colors['text']
-        #
-        # },
-        #     id='ticker_selection',
-        #     options=[
-        #         {'label': i, 'value': i} for i in df.ticker.unique()
-        #     ], multi=False,
-        #     placeholder='Filter by ticker of company ...'),
-        # html.H3(id='text'),
-        # dcc.Graph(id='indicators')])
-        #     ])
+        # -----------------------------------
+        # Define Dropdown
+        # -----------------------------------
 
         dcc.Dropdown(style={
-                    'textAlign': 'left',
-                    'color': colors['text']
+            'textAlign': 'left',
+            'color': colors['text']
 
-                },
-                    id='issuer_selection',
-                    options=[
-                        {'label': i, 'value': i} for i in df.issuer.unique()
-                    ], multi=False,
-                    placeholder='Filter by name of company ...'),
-                html.H3(id='text'),
-                dcc.Graph(id='indicators'),
-                dcc.Graph(id='indicators1')])
+        },
+            id='issuer_selection',
+            options=[
+                {'label': i, 'value': i} for i in df.issuer.unique()
+            ], multi=False,
+            placeholder='Filter by name of company ...'),
+        html.H3(id='text'),
+        dcc.Graph(id='indicators'),
+
+        dcc.Dropdown(style={
+            'textAlign': 'left',
+            'color': colors['text']
+
+        },
+            id='issuer_selection1',
+            options=[
+                {'label': i, 'value': i} for i in df1.issuer.unique()
+            ], multi=False,
+            placeholder='Filter by name of company ...'),
+        html.H3(id='text'),
+        dcc.Graph(id='indicators1')
                     ])
+    ])
 
 # -----------------------------------
-# Define first callback
-# By #ticker or by name
+# Define the first callback
 # -----------------------------------
-
-# @app.callback(Output('indicators', 'figure'),
-#               [Input('ticker_selection', 'value')])
-# def retrieve_plots(ticker):
-#     filtered_df = df[df['ticker'] == ticker]
 
 @app.callback(Output('indicators', 'figure'),
-              [Input('issuer_selection', 'value')])
+              [Input('issuer_selection', 'value')]
+              )
 def retrieve_plots(issuer):
     filtered_df = df[df['issuer'] == issuer]
 
@@ -166,7 +158,6 @@ def retrieve_plots(issuer):
                         marker=dict(color='#36017A'),
                         text=filtered_df.year)
 
-
     data = [trace1, trace2, trace3]
 
     layout = dict(yaxis=dict(title='Prices', ticklen=5, zeroline=False),
@@ -180,42 +171,76 @@ def retrieve_plots(issuer):
     return datapoints
 
 # -----------------------------------
-# Define second callback
+# Define second app layout
+# -----------------------------------
+
+layout = html.Div(children=[
+    html.H1(children='Financial Dashboard for FellowshipPL',
+            style={'textAlign': 'center', 'color': colors['text']}
+            ),
+    html.Div(children=[
+        html.Div(style={
+            'textAlign': 'center', 'color': colors['font']
+        },
+            children='''Financial Project Web Application
+        '''),
+
+        # -----------------------------------
+        # Define Dropdown
+        # -----------------------------------
+
+        dcc.Dropdown(style={
+            'textAlign': 'left',
+            'color': colors['text']
+
+        },
+            id='issuer_selection1',
+            options=[
+                {'label': i, 'value': i} for i in df1.issuer.unique()
+            ], multi=False,
+            placeholder='Filter by name of company ...'),
+        html.H3(id='text'),
+        dcc.Graph(id='indicators1')
+                    ])
+])
+# -----------------------------------
+# Define the second callback
 # -----------------------------------
 
 @app.callback(Output('indicators1', 'figure'),
-              [Input('issuer_selection', 'value')])
+              [Input('issuer_selection1', 'value')])
 def retrieve_plots(issuer):
     filtered_df1 = df1[df1['issuer'] == issuer]
 
-    # Creating trace1
-    trace1 = go.Bar(x=filtered_df1['session_date'],
+    # Creating trace4
+    trace4 = go.Scatter(x=filtered_df1['session_date'],
                         y=filtered_df1['close'],
-                        mode="lines+markers",
+                        mode="lines",
                         name="Close price",
                         marker=dict(color='#B780FF'),
                         text=filtered_df1.session_date)
 
-    # Creating trace2
-    trace2 = go.Bar(x=filtered_df1['session_date'],
+    # Creating 5
+    trace5 = go.Scatter(x=filtered_df1['session_date'],
                         y=filtered_df1['open'],
-                        mode="lines+markers",
+                        mode="lines",
                         name="Open price",
                         marker=dict(color='#C2BF4E'),
                         text=filtered_df1.session_date)
 
+    data1 = [trace4, trace5]
 
-    data1 = [trace1, trace2]
-
-    layout = dict(yaxis=dict(title='Prices', ticklen=5, zeroline=False),
-                  xaxis=dict(title='Date', ticklen=5, zeroline=False),
+    layout = dict(yaxis=dict(title='Close & open prices', ticklen=5, zeroline=False),
+                  xaxis=dict(title='Session date', ticklen=5, zeroline=False),
                   hovermode="x unified",
                   style={'textAlign': 'center',
                          'color': colors['text']
                          },
                   )
-    datapoints = {'data': data1, 'layout': layout}
-    return datapoints
+    datapoints1 = {'data': data1, 'layout': layout}
+    return datapoints1
+
+
 
 # -----------------------------------
 # Run the app
