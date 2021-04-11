@@ -11,6 +11,7 @@ from dash.dependencies import Input, Output
 from mysql.connector import Error
 import mysql.connector
 import pandas as pd
+from datetime import date
 
 # -----------------------------------
 # Connect to database OR data source here
@@ -36,7 +37,7 @@ except Error as e:
 curs = db.cursor()
 
 testy = """SELECT o.ticker, o.issuer, o.session_date, o.open, o.close, o.min
-FROM olhc AS o WHERE o.session_date BETWEEN '2019-01-01' AND '2020-12-31'"""
+FROM olhc AS o;"""
 
 curs.execute(testy)
 
@@ -45,10 +46,7 @@ for x in curs:
     data.append(x)
 
 df = pd.DataFrame(data, columns=['ticker', 'issuer', 'session_date', 'open', 'close', 'min'])
-print(df.sample())
-
-# df.info()
-# print(round(df.describe(), 2))
+# print(df.sample())
 
 # -----------------------------------
 # Initialize the app
@@ -80,25 +78,27 @@ app.layout = html.Div(children=[
             },
             children='''Financial Dashboard for FellowshipPL
         '''),
+        dcc.DatePickerRange(
+            id='my-date-picker-range',
+            calendar_orientation='horizontal',
+            day_size=30,
+            first_day_of_week=1,  # 0 Sunday
+            clearable=False,
+            with_portal=False,  # True on the page
+            min_date_allowed=date(2010, 1, 1),
+            max_date_allowed=date(2021, 12, 31),
+            initial_visible_month=date(2020, 1, 1),
+            start_date=date(2020, 1, 1),
+            end_date=date(2021, 12, 31),
+            display_format='MMM Do, YYYY',  # lots possibilities
 
-# -----------------------------------
-# Define Dropdown
-# Sample by #ticker or by name
-# -----------------------------------
+            updatemode='singledate'
+        ),
+html.Div(id='output-container-date-picker-range'),
 
-        # dcc.Dropdown(style={
-        #     'textAlign': 'left',
-        #     'color': colors['text']
-        #
-        # },
-        #     id='ticker_selection',
-        #     options=[
-        #         {'label': i, 'value': i} for i in df.ticker.unique()
-        #     ], multi=False,
-        #     placeholder='Filter by ticker of company ...'),
-        # html.H3(id='text'),
-        # dcc.Graph(id='indicators')])
-        #     ])
+        # -----------------------------------
+        # Define Dropdown
+        # -----------------------------------
 
         dcc.Dropdown(style={
                     'textAlign': 'left',
@@ -116,13 +116,26 @@ app.layout = html.Div(children=[
 
 # -----------------------------------
 # Define first callback
-# By #ticker or by name
 # -----------------------------------
 
-# @app.callback(Output('indicators', 'figure'),
-#               [Input('ticker_selection', 'value')])
-# def retrieve_plots(ticker):
-#     filtered_df = df[df['ticker'] == ticker]
+@app.callback(
+    dash.dependencies.Output('output-container-date-picker-range', 'children'),
+    [dash.dependencies.Input('my-date-picker-range', 'start_date'),
+     dash.dependencies.Input('my-date-picker-range', 'end_date')])
+def update_output(start_date, end_date):
+    string_prefix = 'You have selected: '
+    if start_date is not None:
+        start_date_object = date.fromisoformat(start_date)
+        start_date_string = start_date_object.strftime('%B %d, %Y')
+        string_prefix = string_prefix + 'Start Date: ' + start_date_string + ' | '
+    if end_date is not None:
+        end_date_object = date.fromisoformat(end_date)
+        end_date_string = end_date_object.strftime('%B %d, %Y')
+        string_prefix = string_prefix + 'End Date: ' + end_date_string
+    if len(string_prefix) == len('You have selected: '):
+        return 'Select a date to see it displayed here'
+    else:
+        return string_prefix
 
 @app.callback(Output('indicators', 'figure'),
               [Input('issuer_selection', 'value')])
@@ -152,7 +165,6 @@ def retrieve_plots(issuer):
                         name="Min price",
                         marker=dict(color='#7FD13A', size=2),
                         text=filtered_df.session_date)
-
 
     data = [trace1, trace2, trace3]
 
