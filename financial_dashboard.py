@@ -35,10 +35,8 @@ except Error as e:
 
 curs = db.cursor()
 
-testy = """SELECT fc.ticker, c.issuer, fc.indicator, fc.year, fc.quarter, fc.value
-FROM financial_calculated_data AS fc
-INNER JOIN companies AS c
-ON c.ticker = fc.ticker """
+testy = """SELECT o.ticker, o.issuer, o.session_date, o.open, o.close, o.min
+FROM olhc AS o WHERE o.session_date BETWEEN '2019-01-01' AND '2020-12-31'"""
 
 curs.execute(testy)
 
@@ -46,7 +44,7 @@ data = []
 for x in curs:
     data.append(x)
 
-df = pd.DataFrame(data, columns=['ticker', 'issuer', 'indicator', 'year', 'quarter', 'value'])
+df = pd.DataFrame(data, columns=['ticker', 'issuer', 'session_date', 'open', 'close', 'min'])
 print(df.sample())
 
 # df.info()
@@ -64,16 +62,16 @@ external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
-colors = dict(background='#ffff',
-              text='#36017A',
-              font='#C2BF4E')
+colors = dict(background='#3333',
+              text='#21617A',
+              font='#21617A')
 
 # -----------------------------------
 # Define app layout
 # -----------------------------------
 
 app.layout = html.Div(children=[
-    html.H1(children='Financial Web Application',
+    html.H1(children='Close & Open prices for company',
             style={'textAlign': 'center', 'color': colors['text']}
             ),
     html.Div(children=[
@@ -132,28 +130,28 @@ def retrieve_plots(issuer):
     filtered_df = df[df['issuer'] == issuer]
 
     # Creating trace1
-    trace1 = go.Scatter(x=filtered_df['year'],
-                        y=filtered_df[filtered_df['indicator'] == 'ROA']['value'],
-                        mode="lines+markers",
-                        name="Indicator ROA",
-                        marker=dict(color='#B780FF'),
-                        text=filtered_df.year)
+    trace1 = go.Scatter(x=filtered_df['session_date'],
+                        y=filtered_df['close'],
+                        mode="markers",
+                        name="Close price",
+                        marker=dict(color='#21617A', size=4),
+                        text=filtered_df['session_date'])
 
     # Creating trace2
-    trace2 = go.Scatter(x=filtered_df['year'],
-                        y=filtered_df[filtered_df['indicator'] == 'WBP']['value'],
-                        mode="lines+markers",
-                        name="Indicator WBP",
-                        marker=dict(color='#C2BF4E'),
-                        text=filtered_df.year)
+    trace2 = go.Scatter(x=filtered_df['session_date'],
+                        y=filtered_df['open'],
+                        mode="markers",
+                        name="Open price",
+                        marker=dict(color='#C22E4C', size=3),
+                        text=filtered_df.session_date)
 
     # Creating trace3
-    trace3 = go.Scatter(x=filtered_df['year'],
-                        y=filtered_df[filtered_df['indicator'] == 'tsk']['value'],
-                        mode="markers+lines",
-                        name="Indicator tsk",
-                        marker=dict(color='#36017A'),
-                        text=filtered_df.year)
+    trace3 = go.Scatter(x=filtered_df['session_date'],
+                        y=filtered_df['min'],
+                        mode="markers",
+                        name="Min price",
+                        marker=dict(color='#7FD13A', size=2),
+                        text=filtered_df.session_date)
 
 
     data = [trace1, trace2, trace3]
