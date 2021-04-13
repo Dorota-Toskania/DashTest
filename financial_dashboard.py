@@ -94,7 +94,7 @@ app.layout = html.Div(children=[
 
             updatemode='singledate'
         ),
-html.Div(id='output-container-date-picker-range'),
+        html.Div(id='output-container-date-picker-range'),
 
         # -----------------------------------
         # Define Dropdown
@@ -110,8 +110,9 @@ html.Div(id='output-container-date-picker-range'),
                         {'label': i, 'value': i} for i in df.issuer.unique()
                     ], multi=False,
                     placeholder='Filter by name of company ...'),
-                html.H3(id='text'),
-                dcc.Graph(id='indicators')])
+        html.H3(id='text'),
+
+        dcc.Graph(id='indicators')])
                     ])
 
 # -----------------------------------
@@ -119,9 +120,9 @@ html.Div(id='output-container-date-picker-range'),
 # -----------------------------------
 
 @app.callback(
-    dash.dependencies.Output('output-container-date-picker-range', 'children'),
-    [dash.dependencies.Input('my-date-picker-range', 'start_date'),
-     dash.dependencies.Input('my-date-picker-range', 'end_date')])
+    Output('output-container-date-picker-range', 'children'),
+    [Input('my-date-picker-range', 'start_date'),
+     Input('my-date-picker-range', 'end_date')])
 def update_output(start_date, end_date):
     string_prefix = 'You have selected: '
     if start_date is not None:
@@ -137,13 +138,16 @@ def update_output(start_date, end_date):
     else:
         return string_prefix
 
-@app.callback(Output('indicators', 'figure'),
-              [Input('issuer_selection', 'value')])
-def retrieve_plots(issuer):
+@app.callback(
+    Output('indicators', 'figure'),
+    [Input('issuer_selection', 'value'),
+     Input('my-date-picker-range', 'start_date'),
+     Input('my-date-picker-range', 'end_date')])
+def retrieve_plots(issuer, start_date, end_date):
     filtered_df = df[df['issuer'] == issuer]
-
+    # dff = df.loc[start_date:end_date]
     # Creating trace1
-    trace1 = go.Scatter(x=filtered_df['session_date'],
+    trace1 = go.Scatter(x=(filtered_df['session_date'] > start_date) & (filtered_df['session_date'] < end_date),
                         y=filtered_df['close'],
                         mode="markers",
                         name="Close price",
@@ -151,7 +155,7 @@ def retrieve_plots(issuer):
                         text=filtered_df['session_date'])
 
     # Creating trace2
-    trace2 = go.Scatter(x=filtered_df['session_date'],
+    trace2 = go.Scatter(x=(filtered_df['session_date'] > start_date) & (filtered_df['session_date'] < end_date),
                         y=filtered_df['open'],
                         mode="markers",
                         name="Open price",
@@ -159,7 +163,7 @@ def retrieve_plots(issuer):
                         text=filtered_df.session_date)
 
     # Creating trace3
-    trace3 = go.Scatter(x=filtered_df['session_date'],
+    trace3 = go.Scatter(x=(filtered_df['session_date'] > start_date) & (filtered_df['session_date'] < end_date),
                         y=filtered_df['min'],
                         mode="markers",
                         name="Min price",
