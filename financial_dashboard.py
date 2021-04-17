@@ -48,7 +48,7 @@ for x in curs:
 df = pd.DataFrame(data, columns=['ticker', 'issuer', 'session_date', 'open', 'close', 'min'])
 
 # convert the 'Session_date' column to datetime format
-df['session_date']= pd.to_datetime(df['session_date'])
+df['session_date'] = pd.to_datetime(df['session_date'])
 
 # -----------------------------------
 # Initialize the app
@@ -89,8 +89,8 @@ app.layout = html.Div(children=[
             with_portal=False,  # True on the page
             min_date_allowed=date(2010, 1, 1),
             max_date_allowed=date(2021, 12, 31),
-            initial_visible_month=date(2020, 1, 1),
-            start_date=date(2011, 1, 1),
+            initial_visible_month=date(2018, 1, 1),
+            start_date=date(2018, 1, 1),
             end_date=date(2021, 12, 31),
             display_format='MMM Do, YYYY',  # lots possibilities
 
@@ -147,32 +147,30 @@ def update_output(start_date, end_date):
      Input('my-date-picker-range', 'end_date')
      ])
 def retrieve_plots(issuer, start_date, end_date):
-    filtered_df = df[df['issuer'] == issuer]
-    #dff = filtered_df.loc[start_date:end_date]
-
+    fil_df = df[df['issuer'] == issuer]
     # Creating trace1
-    trace1 = go.Scatter(x=(filtered_df['session_date'] == start_date),
-                        y=filtered_df['close'],
+    trace1 = go.Scatter(x=(fil_df[(fil_df['session_date'] > start_date)][fil_df['session_date'] < end_date]["session_date"]),
+                        y=fil_df['close'],
                         mode="markers",
                         name="Close price",
                         marker=dict(color='#21617A', size=4),
-                        text=filtered_df['session_date'])
+                        text=fil_df['session_date'])
 
     # Creating trace2
-    trace2 = go.Scatter(x=(filtered_df['session_date'] == start_date),
-                        y=filtered_df['open'],
+    trace2 = go.Scatter(x=(fil_df[(fil_df['session_date'] > start_date)][fil_df['session_date'] < end_date]["session_date"]),
+                        y=fil_df['open'],
                         mode="markers",
                         name="Open price",
                         marker=dict(color='#C22E4C', size=3),
-                        text=filtered_df.session_date)
+                        text=fil_df['session_date'])
 
     # Creating trace3
-    trace3 = go.Scatter(x=(filtered_df['session_date'] == start_date),
-                        y=filtered_df['min'],
+    trace3 = go.Scatter(x=(fil_df[(fil_df['session_date'] > start_date)][fil_df['session_date'] < end_date]["session_date"]),
+                        y=fil_df['min'],
                         mode="markers",
                         name="Min price",
                         marker=dict(color='#7FD13A', size=2),
-                        text=filtered_df.session_date)
+                        text=fil_df['session_date'])
 
     data = [trace1, trace2, trace3]
 
