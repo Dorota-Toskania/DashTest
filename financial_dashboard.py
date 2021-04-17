@@ -90,7 +90,7 @@ app.layout = html.Div(children=[
             min_date_allowed=date(2010, 1, 1),
             max_date_allowed=date(2021, 12, 31),
             initial_visible_month=date(2020, 1, 1),
-            start_date=date(2020, 1, 1),
+            start_date=date(2011, 1, 1),
             end_date=date(2021, 12, 31),
             display_format='MMM Do, YYYY',  # lots possibilities
 
@@ -140,19 +140,18 @@ def update_output(start_date, end_date):
     else:
         return string_prefix
 
-# @app.callback(
-#     Output('indicators', 'figure'),
-#     [Input('issuer_selection', 'value'),
-#      Input('my-date-picker-range', 'start_date'),
-#      Input('my-date-picker-range', 'end_date')])
 @app.callback(
     Output('indicators', 'figure'),
-    [Input('issuer_selection', 'value')])
-def retrieve_plots(issuer):
+    [Input('issuer_selection', 'value'),
+     Input('my-date-picker-range', 'start_date'),
+     Input('my-date-picker-range', 'end_date')
+     ])
+def retrieve_plots(issuer, start_date, end_date):
     filtered_df = df[df['issuer'] == issuer]
-    # dff = df.loc[start_date:end_date]
+    #dff = filtered_df.loc[start_date:end_date]
+
     # Creating trace1
-    trace1 = go.Scatter(x=(filtered_df['session_date']),
+    trace1 = go.Scatter(x=(filtered_df['session_date'] == start_date),
                         y=filtered_df['close'],
                         mode="markers",
                         name="Close price",
@@ -160,7 +159,7 @@ def retrieve_plots(issuer):
                         text=filtered_df['session_date'])
 
     # Creating trace2
-    trace2 = go.Scatter(x=(filtered_df['session_date']),
+    trace2 = go.Scatter(x=(filtered_df['session_date'] == start_date),
                         y=filtered_df['open'],
                         mode="markers",
                         name="Open price",
@@ -168,7 +167,7 @@ def retrieve_plots(issuer):
                         text=filtered_df.session_date)
 
     # Creating trace3
-    trace3 = go.Scatter(x=(filtered_df['session_date']),
+    trace3 = go.Scatter(x=(filtered_df['session_date'] == start_date),
                         y=filtered_df['min'],
                         mode="markers",
                         name="Min price",
