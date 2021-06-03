@@ -21,7 +21,7 @@ import mysql.connector
 class Error(object):
     pass
 
-
+# dodaj dane z pliku, bo baza zamknięta
 try:
     db = mysql.connector.connect(
         user="fellow",
